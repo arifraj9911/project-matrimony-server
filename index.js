@@ -39,6 +39,27 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/initialAllMembers", async (req, res) => {
+      const result = await memberCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/allMembers", async (req, res) => {
+      //   console.log(req.query.gender);
+      const ageSplit = req.query.age;
+      const ageFirst = parseInt(ageSplit.split("-")[0]);
+      const ageLast = parseInt(ageSplit.split("-")[1]);
+      //   console.log(ageFirst, ageLast);
+      const query = {
+        biodata_type: req.query.gender,
+        permanent_division_name: req.query.division,
+        age: { $lt: ageLast, $gt: ageFirst },
+      };
+
+      const result = await memberCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.get("/members/:id", async (req, res) => {
       const id = parseInt(req.params.id);
       // console.log(typeof id)
