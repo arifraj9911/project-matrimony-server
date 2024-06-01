@@ -68,6 +68,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/similarMembers", async (req, res) => {
+      console.log(req.query);
+      const query = { biodata_type: req.query.gender };
+      const result = await memberCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
