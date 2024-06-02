@@ -39,6 +39,11 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/membersCount", async (req, res) => {
+      const count = await memberCollection.estimatedDocumentCount();
+      res.send({count});
+    });
+
     app.get("/initialAllMembers", async (req, res) => {
       const result = await memberCollection.find().toArray();
       res.send(result);
@@ -74,6 +79,13 @@ async function run() {
       const result = await memberCollection.find(query).toArray();
       res.send(result);
     });
+
+
+    app.post('/members',async(req,res)=>{
+      const profileBiodata = req.body;
+      const result = await memberCollection.insertOne(profileBiodata);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
