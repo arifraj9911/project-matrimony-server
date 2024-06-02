@@ -27,6 +27,7 @@ async function run() {
 
     const memberCollection = client.db("dbMatrimony").collection("allMember");
     const favoriteCollection = client.db("dbMatrimony").collection("favorite");
+    const userCollection = client.db("dbMatrimony").collection("user");
 
     app.get("/members", async (req, res) => {
       const filter = req.query;
@@ -116,6 +117,24 @@ async function run() {
     app.post("/favoriteBiodata", async (req, res) => {
       const biodata = req.body;
       const result = await favoriteCollection.insertOne(biodata);
+      res.send(result);
+    });
+
+    app.delete("/favoriteBiodata/:id", async (req, res) => {
+      const id = parseInt(req.params.id);
+      const query = { biodata_id: id };
+      const result = await favoriteCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.post("/users", async (req, res) => {
+      const users = req.body;
+      const query = { email: users.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "users already exists", insertedId: null });
+      }
+      const result = await userCollection.insertOne(users);
       res.send(result);
     });
 
