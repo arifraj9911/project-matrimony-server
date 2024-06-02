@@ -26,6 +26,7 @@ async function run() {
     await client.connect();
 
     const memberCollection = client.db("dbMatrimony").collection("allMember");
+    const favoriteCollection = client.db("dbMatrimony").collection("favorite");
 
     app.get("/members", async (req, res) => {
       const filter = req.query;
@@ -81,6 +82,19 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/similarMembers", async (req, res) => {
+      console.log(req.query);
+      const query = { biodata_type: req.query.gender };
+      const result = await memberCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/members", async (req, res) => {
+      const profileBiodata = req.body;
+      const result = await memberCollection.insertOne(profileBiodata);
+      res.send(result);
+    });
+
     app.patch("/initialAllMembers/premium/:id", async (req, res) => {
       const id = parseInt(req.params.id);
       console.log(typeof id);
@@ -94,16 +108,14 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/similarMembers", async (req, res) => {
-      console.log(req.query);
-      const query = { biodata_type: req.query.gender };
-      const result = await memberCollection.find(query).toArray();
+    app.get("/favoriteBiodata", async (req, res) => {
+      const result = await favoriteCollection.find().toArray();
       res.send(result);
     });
 
-    app.post("/members", async (req, res) => {
-      const profileBiodata = req.body;
-      const result = await memberCollection.insertOne(profileBiodata);
+    app.post("/favoriteBiodata", async (req, res) => {
+      const biodata = req.body;
+      const result = await favoriteCollection.insertOne(biodata);
       res.send(result);
     });
 
