@@ -41,7 +41,7 @@ async function run() {
 
     app.get("/membersCount", async (req, res) => {
       const count = await memberCollection.estimatedDocumentCount();
-      res.send({count});
+      res.send({ count });
     });
 
     app.get("/initialAllMembers", async (req, res) => {
@@ -73,6 +73,27 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/initialAllMembers/:email", async (req, res) => {
+      const email = req.params.email;
+      // console.log(email);
+      const query = { email: email };
+      const result = await memberCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.patch("/initialAllMembers/premium/:id", async (req, res) => {
+      const id = parseInt(req.params.id);
+      console.log(typeof id);
+      const filter = { biodata_id: id };
+      const updatedDoc = {
+        $set: {
+          role: "premium",
+        },
+      };
+      const result = await memberCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
     app.get("/similarMembers", async (req, res) => {
       console.log(req.query);
       const query = { biodata_type: req.query.gender };
@@ -80,12 +101,11 @@ async function run() {
       res.send(result);
     });
 
-
-    app.post('/members',async(req,res)=>{
+    app.post("/members", async (req, res) => {
       const profileBiodata = req.body;
       const result = await memberCollection.insertOne(profileBiodata);
       res.send(result);
-    })
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
