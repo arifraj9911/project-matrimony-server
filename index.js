@@ -127,6 +127,10 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/users",async(req,res)=>{
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    })
     app.post("/users", async (req, res) => {
       const users = req.body;
       const query = { email: users.email };
