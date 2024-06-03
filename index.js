@@ -261,6 +261,13 @@ async function run() {
       });
     });
 
+    app.delete("/myRequestContact/:id", async (req, res) => {
+      const id = parseInt(req.params.id);
+      const query = { biodata_id: id };
+      const result = await contactRequestCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
