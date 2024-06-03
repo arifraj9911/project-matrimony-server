@@ -128,7 +128,27 @@ async function run() {
     });
 
     app.get("/users", async (req, res) => {
+      // const searchText = req.query.search;
+      // const query = {
+      //   name: {
+      //     $regex: searchText,
+      //     $options: "i",
+      //   },
+      // };
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/userSearch", async (req, res) => {
+      console.log(req.query);
+      const searchText = req.query.search;
+      const query = {
+        name: {
+          $regex: searchText,
+          $options: "i",
+        },
+      };
+      const result = await userCollection.find(query).toArray();
       res.send(result);
     });
     app.post("/users", async (req, res) => {
