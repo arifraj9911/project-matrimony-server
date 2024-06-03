@@ -110,6 +110,15 @@ async function run() {
 
     app.post("/members", async (req, res) => {
       const profileBiodata = req.body;
+      const query = { email: profileBiodata.email };
+      const existingBiodata = await memberCollection.findOne(query);
+      if (existingBiodata) {
+        return res.send({
+          message:
+            "biodata already created with this email, please use another email for created your biodata",
+          insertedId: null,
+        });
+      }
       const result = await memberCollection.insertOne(profileBiodata);
       res.send(result);
     });
