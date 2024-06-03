@@ -83,6 +83,24 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/premium", async (req, res) => {
+      const query = { status: { $in: ["pending", "premium"] } };
+      const result = await memberCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.put("/premium/:id", async (req, res) => {
+      const id = parseInt(req.params.id);
+      const filter = { biodata_id: id };
+      const updatedDoc = {
+        $set: {
+          status: "premium",
+        },
+      };
+      const result = await memberCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
     app.get("/similarMembers", async (req, res) => {
       console.log(req.query);
       const query = { biodata_type: req.query.gender };
@@ -102,7 +120,7 @@ async function run() {
       const filter = { biodata_id: id };
       const updatedDoc = {
         $set: {
-          role: "premium",
+          status: "pending",
         },
       };
       const result = await memberCollection.updateOne(filter, updatedDoc);
@@ -128,13 +146,6 @@ async function run() {
     });
 
     app.get("/users", async (req, res) => {
-      // const searchText = req.query.search;
-      // const query = {
-      //   name: {
-      //     $regex: searchText,
-      //     $options: "i",
-      //   },
-      // };
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -167,7 +178,7 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
-          status: "admin",
+          role: "admin",
         },
       };
       const result = await userCollection.updateOne(filter, updatedDoc);
@@ -178,7 +189,7 @@ async function run() {
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
-          role: "premium",
+          status: "premium",
         },
       };
       const result = await userCollection.updateOne(filter, updatedDoc);
