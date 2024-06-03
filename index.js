@@ -29,6 +29,9 @@ async function run() {
     const memberCollection = client.db("dbMatrimony").collection("allMember");
     const favoriteCollection = client.db("dbMatrimony").collection("favorite");
     const userCollection = client.db("dbMatrimony").collection("user");
+    const contactRequestCollection = client
+      .db("dbMatrimony")
+      .collection("contactRequest");
 
     app.get("/members", async (req, res) => {
       const filter = req.query;
@@ -203,6 +206,39 @@ async function run() {
         },
       };
       const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.get("/contactRequest/:id", async (req, res) => {
+      const id = parseInt(req.params.id);
+      const query = { biodata_id: id };
+      const result = await memberCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/contactRequestSend", async (req, res) => {
+      const requestData = req.body;
+      const result = await contactRequestCollection.insertOne(requestData);
+      res.send(result);
+    });
+
+    app.get("/myRequestContact", async (req, res) => {
+      const result = await contactRequestCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.put("/myRequestContact/contactApproval/:id", async (req, res) => {
+      const id = parseInt(req.params.id);
+      const filter = { biodata_id: id };
+      const updatedDoc = {
+        $set: {
+          status: "approved",
+        },
+      };
+      const result = await contactRequestCollection.updateOne(
+        filter,
+        updatedDoc
+      );
       res.send(result);
     });
 
