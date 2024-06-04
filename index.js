@@ -32,6 +32,7 @@ async function run() {
     const contactRequestCollection = client
       .db("dbMatrimony")
       .collection("contactRequest");
+    const paymentCollection = client.db("dbMatrimony").collection("payments");
 
     app.get("/members", async (req, res) => {
       const filter = req.query;
@@ -267,6 +268,12 @@ async function run() {
       });
     });
 
+    app.post("/payments", async (req, res) => {
+      const payments = req.body;
+      const result = await paymentCollection.insertOne(payments);
+      res.send(result);
+    });
+
     app.delete("/myRequestContact/:id", async (req, res) => {
       const id = parseInt(req.params.id);
       const query = { biodata_id: id };
@@ -292,7 +299,29 @@ async function run() {
         premiumQuery
       );
 
-      res.send({ totalBiodata, maleBiodata, femaleBiodata, premiumBiodata });
+      // total revenue
+      const result = await paymentCollection
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalRevenue: {
+                $sum: "$price",
+              },
+            },
+          },
+        ])
+        .toArray();
+
+      const revenue = result[0] ? result[0].totalRevenue : 0;
+
+      res.send({
+        totalBiodata,
+        maleBiodata,
+        femaleBiodata,
+        premiumBiodata,
+        revenue,
+      });
     });
 
     // Send a ping to confirm a successful connection
