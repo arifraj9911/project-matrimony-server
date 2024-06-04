@@ -64,7 +64,7 @@ async function run() {
       const query = {
         biodata_type: req.query.gender,
         permanent_division_name: req.query.division,
-        age: { $lt: ageLast, $gt: ageFirst },
+        age: { $lte: ageLast, $gte: ageFirst },
       };
 
       const result = await memberCollection.find(query).toArray();
@@ -75,7 +75,7 @@ async function run() {
       const id = parseInt(req.params.id);
       // console.log(typeof id)
       const query = { biodata_id: id };
-      const result = await memberCollection.find(query).toArray();
+      const result = await memberCollection.findOne(query);
       res.send(result);
     });
 
@@ -160,6 +160,12 @@ async function run() {
 
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
       res.send(result);
     });
 
