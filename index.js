@@ -274,6 +274,27 @@ async function run() {
       res.send(result);
     });
 
+    // admin stats
+    app.get("/admin-stats", async (req, res) => {
+      const totalBiodata = await memberCollection.estimatedDocumentCount();
+
+      // male biodata
+      const maleQuery = { biodata_type: "Male" };
+      const maleBiodata = await memberCollection.countDocuments(maleQuery);
+
+      // female biodata
+      const femaleQuery = { biodata_type: "Female" };
+      const femaleBiodata = await memberCollection.countDocuments(femaleQuery);
+
+      // premium biodata
+      const premiumQuery = { status: "premium" };
+      const premiumBiodata = await memberCollection.countDocuments(
+        premiumQuery
+      );
+
+      res.send({ totalBiodata, maleBiodata, femaleBiodata, premiumBiodata });
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
