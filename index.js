@@ -37,7 +37,7 @@ async function run() {
 
     // middleware of json web token
     const verifyToken = (req, res, next) => {
-      // console.log("inside middleware", req.headers.authorization);
+      // console.log("inside middleware", req.headers);
       if (!req.headers.authorization) {
         return res.status(401).send({ message: "unauthorized" });
       }
@@ -59,6 +59,7 @@ async function run() {
       if (!isAdmin) {
         return res.status(403).send({ message: "forbidden access" });
       }
+      console.log(isAdmin);
       next();
     };
 
@@ -119,13 +120,16 @@ async function run() {
 
     app.get("/initialAllMembers/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "unauthorized access" });
+      }
       // console.log(email);
       const query = { email: email };
       const result = await memberCollection.find(query).toArray();
       res.send(result);
     });
 
-    app.get("/premium", verifyToken, async (req, res) => {
+    app.get("/premium", verifyToken, verifyAdmin, async (req, res) => {
       const query = { status: { $in: ["pending", "premium"] } };
       const result = await memberCollection.find(query).toArray();
       res.send(result);
@@ -167,7 +171,7 @@ async function run() {
 
     app.patch("/initialAllMembers/premium/:id", async (req, res) => {
       const id = parseInt(req.params.id);
-      console.log(typeof id);
+      // console.log(typeof id);
       const filter = { biodata_id: id };
       const updatedDoc = {
         $set: {
@@ -280,7 +284,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/myRequestContact", verifyToken, async (req, res) => {
+    app.get("/myRequestContact", verifyToken, verifyAdmin, async (req, res) => {
       const result = await contactRequestCollection.find().toArray();
       res.send(result);
     });
@@ -333,7 +337,7 @@ async function run() {
     });
 
     // admin stats
-    app.get("/admin-stats", verifyToken, async (req, res) => {
+    app.get("/admin-stats", verifyToken, verifyAdmin, async (req, res) => {
       const totalBiodata = await memberCollection.estimatedDocumentCount();
 
       // male biodata
