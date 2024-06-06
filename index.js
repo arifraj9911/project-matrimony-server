@@ -33,6 +33,9 @@ async function run() {
     const contactRequestCollection = client
       .db("dbMatrimony")
       .collection("contactRequest");
+    const successStoryCollection = client
+      .db("dbMatrimony")
+      .collection("successStory");
     const paymentCollection = client.db("dbMatrimony").collection("payments");
 
     // middleware of json web token
@@ -301,6 +304,12 @@ async function run() {
         filter,
         updatedDoc
       );
+      res.send(result);
+    });
+
+    app.post("/gotMarried", verifyToken, async (req, res) => {
+      const marriedInfo = req.body;
+      const result = await successStoryCollection.insertOne(marriedInfo);
       res.send(result);
     });
 
