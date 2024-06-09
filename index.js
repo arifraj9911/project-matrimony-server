@@ -93,8 +93,16 @@ async function run() {
     });
 
     app.get("/initialAllMembers", async (req, res) => {
-      const result = await memberCollection.find().toArray();
+      const result = await memberCollection
+        .find()
+        .skip(parseInt(req.query.page) * parseInt(req.query.size))
+        .limit(parseInt(req.query.size))
+        .toArray();
       res.send(result);
+    });
+    app.get("/initialAllMembersCount", async (req, res) => {
+      const count = await memberCollection.estimatedDocumentCount();
+      res.send({ count });
     });
 
     app.get("/allMembers", async (req, res) => {
@@ -109,7 +117,11 @@ async function run() {
         age: { $lte: ageLast, $gte: ageFirst },
       };
 
-      const result = await memberCollection.find(query).toArray();
+      const result = await memberCollection
+        .find(query)
+        .skip(parseInt(req.query.page) * parseInt(req.query.size))
+        .limit(parseInt(req.query.size))
+        .toArray();
       res.send(result);
     });
 
@@ -307,6 +319,18 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/successStory", async (req, res) => {
+      const result = await successStoryCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/successStory/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await successStoryCollection.findOne(query);
+      res.send(result);
+    });
+
     app.post("/gotMarried", verifyToken, async (req, res) => {
       const marriedInfo = req.body;
       const result = await successStoryCollection.insertOne(marriedInfo);
@@ -343,6 +367,24 @@ async function run() {
       const query = { biodata_id: id };
       const result = await contactRequestCollection.deleteOne(query);
       res.send(result);
+    });
+
+    app.get("/successCounter", async (req, res) => {
+      const totalBiodata = await memberCollection.estimatedDocumentCount();
+
+      // male biodata
+      const maleQuery = { biodata_type: "Male" };
+      const maleBiodata = await memberCollection.countDocuments(maleQuery);
+
+      // female biodata
+      const femaleQuery = { biodata_type: "Female" };
+      const femaleBiodata = await memberCollection.countDocuments(femaleQuery);
+
+      res.send({
+        totalBiodata,
+        maleBiodata,
+        femaleBiodata,
+      });
     });
 
     // admin stats
