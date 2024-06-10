@@ -9,7 +9,11 @@ const port = process.env.PORT || 5000;
 
 // middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173"
+  ]
+}));
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.fxja28l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -25,7 +29,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const memberCollection = client.db("dbMatrimony").collection("allMember");
     const favoriteCollection = client.db("dbMatrimony").collection("favorite");
@@ -77,7 +81,7 @@ async function run() {
 
     app.get("/members", async (req, res) => {
       const filter = req.query;
-      const query = {};
+      const query = { status: "premium" };
       const options = {
         sort: {
           age: filter.sort === "asc" ? 1 : -1,
@@ -117,6 +121,7 @@ async function run() {
         age: { $lte: ageLast, $gte: ageFirst },
       };
 
+      console.log(query);
       const result = await memberCollection
         .find(query)
         .skip(parseInt(req.query.page) * parseInt(req.query.size))
@@ -293,16 +298,25 @@ async function run() {
       res.send(result);
     });
 
-    app.post("/contactRequestSend", verifyToken, async (req, res) => {
+    app.post("/contactRequestSend", async (req, res) => {
       const requestData = req.body;
       const result = await contactRequestCollection.insertOne(requestData);
       res.send(result);
     });
 
-    app.get("/myRequestContact", verifyToken, verifyAdmin, async (req, res) => {
+    app.get("/myRequestContact", verifyToken, async (req, res) => {
       const result = await contactRequestCollection.find().toArray();
       res.send(result);
     });
+    app.get(
+      "/approveRequestContact",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const result = await contactRequestCollection.find().toArray();
+        res.send(result);
+      }
+    );
 
     app.put("/myRequestContact/contactApproval/:id", async (req, res) => {
       const id = parseInt(req.params.id);
@@ -373,11 +387,11 @@ async function run() {
       const totalBiodata = await memberCollection.estimatedDocumentCount();
 
       // male biodata
-      const maleQuery = { biodata_type: "Male" };
+      const maleQuery = { biodata_type: "male" };
       const maleBiodata = await memberCollection.countDocuments(maleQuery);
 
       // female biodata
-      const femaleQuery = { biodata_type: "Female" };
+      const femaleQuery = { biodata_type: "female" };
       const femaleBiodata = await memberCollection.countDocuments(femaleQuery);
 
       res.send({
@@ -392,11 +406,11 @@ async function run() {
       const totalBiodata = await memberCollection.estimatedDocumentCount();
 
       // male biodata
-      const maleQuery = { biodata_type: "Male" };
+      const maleQuery = { biodata_type: "male" };
       const maleBiodata = await memberCollection.countDocuments(maleQuery);
 
       // female biodata
-      const femaleQuery = { biodata_type: "Female" };
+      const femaleQuery = { biodata_type: "female" };
       const femaleBiodata = await memberCollection.countDocuments(femaleQuery);
 
       // premium biodata
@@ -431,10 +445,10 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
