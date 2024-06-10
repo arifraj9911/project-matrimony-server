@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors({
   origin: [
-    "http://localhost:5173"
+    "http://localhost:5173","https://project-matrimony-9e690.web.app"
   ]
 }));
 
